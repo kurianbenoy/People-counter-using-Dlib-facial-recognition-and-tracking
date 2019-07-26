@@ -14,6 +14,8 @@ Counts the number of people inside a room and the returns their names using faci
 
 4.Add new faces and modify ```ppl_cntr2.py``` to recognise the people in the room and return their names.
 
+5.Include weights for keras-retianet in the ```snapshots``` folder.
+
 ## More  details can be found on the below links 
 - https://www.pyimagesearch.com/2018/08/13/opencv-people-counter/
 - https://www.pyimagesearch.com/2018/06/18/face-recognition-with-opencv-python-and-deep-learning/
