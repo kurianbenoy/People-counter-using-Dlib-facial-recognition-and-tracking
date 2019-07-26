@@ -33,7 +33,7 @@ def peoplereg():
     i=0
     j=0
     enter=0
-    cap=cv2.VideoCapture('rtsp://192.168.21.210:8080/h264_ulaw.sdp')
+    cap=cv2.VideoCapture(1)
 ########################main_loop###################################
     while True:
         ret,frame = cap.read()
