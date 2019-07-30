@@ -1,5 +1,5 @@
-from centroidtracker2 import CentroidTracker
-from face_recognizer2 import FaceRecognizer
+from centroidtracker import CentroidTracker
+from face_recognizer import FaceRecognizer
 import numpy as np
 import imutils
 import dlib
@@ -7,16 +7,13 @@ import cv2
 import urllib.request
 import face_recognition
 import keras
-# import keras_retinanet
 from keras_retinanet import models
 from keras_retinanet.utils.image import read_image_bgr, preprocess_image, resize_image
 
 from keras_retinanet.utils.colors import label_color
 import tensorflow as tf
-# import miscellaneous modules
-import cv2
+import requests
 import os
-import numpy as np
 import time
 
 def peoplereg():
@@ -145,6 +142,7 @@ def get_session():
     return tf.Session(config=config)
 
 clist = []
+
 def retinanet():
     keras.backend.tensorflow_backend.set_session(get_session())
     model_path = os.path.join('.', 'snapshots', 'head_detection_model_res50.h5')
@@ -155,7 +153,8 @@ def retinanet():
     names_to_labels = {'head':0}
     labels_to_names = {v: k for k, v in names_to_labels.items()}
     camera=cv2.VideoCapture(1)
-    while True:
+    start = time.time()
+    while (time.time()-start<33) :
         ret,image=camera.read()
         print(image.shape)
         draw = image.copy()
@@ -166,41 +165,31 @@ def retinanet():
         image, scale = resize_image(image)
 
     # process image
-        start = time.time()
+        start1 = time.time()
         boxes, scores, labels = model.predict_on_batch(np.expand_dims(image, axis=0))
-        print("processing time: ", time.time() - start)
+        print("processing time: ", time.time() - start1)
 
         print(boxes.shape)
         print(scores.shape)
         print(labels.shape)
         # correct for image scale
         boxes /= scale
-        c=0
+        count=0
         # visualize detections
         for box, score, label in zip(boxes[0], scores[0], labels[0]):
         # scores are sorted so we can break
             if score < 0.5:
                 break
-            c+=1
-        #color = label_color(label)
+            count+=1
 
-        
-        #b = box.astype(int)
-        #draw_box(draw, b, color=color)
-        
-        #caption = "{} {:.3f}".format(labels_to_names[label], score)
-        #draw_caption(draw, b, caption)
-        print("Present count:" ,c)  
-        draw = cv2.cvtColor(draw, cv2.COLOR_BGR2RGB)
-        cv2.imshow('window',cv2.resize(draw,(640,480)))
-        cv2.waitKey(1)
+        print("Present count:" ,count)  
+        clist.append(count)
+    cnt=np.bincount(np.array(clist))
+    data= {'head_count': np.argmax(cnt) }
+    r= requests.post('http://localhost:5000/',data)
+    print(r.text)
 
-        if(len(clist) < 10):
-            clist.append(c)
-        if(len(clist)>10):
-            x = np.array(clist)
-            y = np.bincount(x)
-            print(y)
-    
-#if __name__ == '__main__':
-#    peoplereg()
+
+if __name__ == '__main__':
+    #peoplereg()
+     retinanet()

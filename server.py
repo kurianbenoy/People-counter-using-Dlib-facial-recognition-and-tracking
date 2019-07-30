@@ -1,14 +1,14 @@
 from flask import Flask
-from multiprocessing import Process
-from threading import Thread
-from merged_code import *
-app = Flask(__name__)
+from flask import request
+app= Flask(__name__)
 
+@app.route('/')
 
-@app.route('/count/')
-def hello_world():
-    Thread(target=peoplereg).start()
-    Thread(target=retinanet).start()
+def hello_count():
+    content=request.get_json()
+    #count=content.get('head_count','')
+    return content
+    
 
 
 #@app.route('/user/<username>')

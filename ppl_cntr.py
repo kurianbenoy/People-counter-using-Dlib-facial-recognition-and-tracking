@@ -23,18 +23,17 @@ def facial_recognition():
     i=0
     faces_per_person_added=0
     enter=False
+#   cap=cv2.VideoCapture('rtsp://192.168.21.210:8080/h264_ulaw.sdp')
+    cap=cv2.VideoCapture(1)
 
-    cap=cv2.VideoCapture('rtsp://192.168.21.210:8080/h264_ulaw.sdp')
-
-'''Main loop '''
- 
+    '''Main loop '''
     while True:
         ret,frame = cap.read()
-        # frame=cv2.resize(frame,(500,500))
+        #frame=cv2.resize(frame,(500,500))
         status = "Waiting"
         rects = []
 
-    ''' Detection API called here '''
+        ''' Detection API called here '''
 
         if frame_cnt%skip_frame==0:
             status = "Detecting"
@@ -47,12 +46,13 @@ def facial_recognition():
 
             for box,name in zip(boxes,names):
                 rects.append([box[0],box[1],box[2],box[3],name])
+                rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 tracker = dlib.correlation_tracker()
                 rect = dlib.rectangle(box[0],box[1],box[2],box[3])
                 tracker.start_track(rgb, rect)
                 trackers.append(tracker)
 
-    ''' Correlation tracker is called '''
+#    ''' Correlation tracker is called '''
         else:
             for (tracker, name) in zip(trackers, names):
                 status = "Tracking"
@@ -61,7 +61,7 @@ def facial_recognition():
                 rects.append([int(pos.left()), int(pos.top()),int(pos.right()), int(pos.bottom()),name])
         objects = ct.update(rects)
 
-        '''Processing returned object boxes '''
+ #       '''Processing returned object boxes '''
         for (objectID, centroid) in objects.items():
             ''' centroid == [cX,cY,name,startX, startY, endX, endY],
                 cX: Centroid X coordinate of previously tracked bbox,
