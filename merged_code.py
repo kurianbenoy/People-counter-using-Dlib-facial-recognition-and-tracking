@@ -154,7 +154,7 @@ def retinanet():
     labels_to_names = {v: k for k, v in names_to_labels.items()}
     camera=cv2.VideoCapture(1)
     start = time.time()
-    while (time.time()-start<33) :
+    while (time.time()-start<10) :
         ret,image=camera.read()
         print(image.shape)
         draw = image.copy()
@@ -185,8 +185,8 @@ def retinanet():
         print("Present count:" ,count)  
         clist.append(count)
     cnt=np.bincount(np.array(clist))
-    data= {'head_count': np.argmax(cnt) }
-    r= requests.post('http://localhost:5000/',data)
+    payload= {'head_count': np.argmax(cnt) }
+    r= requests.post('https://httpbin.org/post', data=payload)
     print(r.text)
 
 
