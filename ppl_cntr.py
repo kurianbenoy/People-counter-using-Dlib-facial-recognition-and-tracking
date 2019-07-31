@@ -6,6 +6,7 @@ import dlib
 import cv2
 import urllib.request
 import face_recognition
+import requests
 
 def facial_recognition():
     train_cnt=7     #number of frames to be used for creating embeddings
@@ -20,16 +21,16 @@ def facial_recognition():
     frame_cnt=0     #counts the present frame id/no.
     face_cnt=0     #current number of faces recognized
     det_flag=False  #Gives if any faces are detected in the given frame
-    i=0
+    i,j=0,0
     faces_per_person_added=0
     enter=False
 #   cap=cv2.VideoCapture('rtsp://192.168.21.210:8080/h264_ulaw.sdp')
-    cap=cv2.VideoCapture(1)
+    cap=cv2.VideoCapture(0)
 
     '''Main loop '''
     while True:
         ret,frame = cap.read()
-        #frame=cv2.resize(frame,(500,500))
+        frame=cv2.resize(frame,(500,500))
         status = "Waiting"
         rects = []
 
@@ -78,7 +79,7 @@ def facial_recognition():
                     unknown_bbox[ objectID ][ img_count[objectID] ] = [int(centroid[4]),int(centroid[5]), int(centroid[6]),int(centroid[3])]
                     img_count[objectID]+=1
 
-            ''' Drawing bboxes and label ids '''
+   #         ''' Drawing bboxes and label ids '''
             cv2.putText(frame,str(centroid[2]), (int(centroid[0]),int(centroid[1])), cv2.FONT_HERSHEY_SIMPLEX,0.75, (255, 255, 0), 2)
             cv2.rectangle(frame,(int(centroid[3]),int(centroid[4])), (int(centroid[5]),int(centroid[6])), (0, 0, 0), 2)
 
@@ -90,17 +91,18 @@ def facial_recognition():
                     '''extracting ROI for adding new faces'''
                     roi=a[ unknown_bbox[objectID][k][0]:unknown_bbox[objectID][k][2],unknown_bbox[objectID][k][3]:unknown_bbox[objectID][k][1] ]
 
-        ''' Creating a new face embedding'''
+    #       ''' Creating a new face embedding'''
 
         if img_count[i]==train_cnt:
             box=[(unknown_bbox[i][j][0],unknown_bbox[i][j][1],unknown_bbox[i][j][2],unknown_bbox[i][j][3])]
             fce.add_new_face(unknown_images[i][j],'person'+str(face_cnt),box)
-            faces_per_person_added+=1
+            j+=1
             
             
             if j==train_cnt:
                 print("New person has been added to database!")
-                faces_per_person_added=0
+                #faces_per_person_added=0
+                j=0
                 face_cnt+=1
                 img_count[i]=0
                 if i==4:
@@ -109,10 +111,13 @@ def facial_recognition():
                     i+=1
             else:
                 if i==4:
-                    i=0
+                  	i=0
                 else:
                     i+=1
-
+            payload = {'status': "New face added", 'count': face_cnt - 1}
+            r = requests.post('https://httpbin.org/post', data=payload)
+            print(r.text)
+			
   ##############display#####################################################
         print('people count of one day=',face_cnt)
         cv2.imshow('frame',frame)

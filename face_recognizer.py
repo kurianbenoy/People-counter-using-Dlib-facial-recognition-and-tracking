@@ -108,7 +108,7 @@ class FaceRecognizer:
 		# convert  BGR to RBG
 		img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 		# detecting faces
-		boxes = face_recognition.face_locations(img, model='cnn')
+		boxes = face_recognition.face_locations(img, model='hog')
 
 		start = time.time()
 		# get the encodings of detected faces
